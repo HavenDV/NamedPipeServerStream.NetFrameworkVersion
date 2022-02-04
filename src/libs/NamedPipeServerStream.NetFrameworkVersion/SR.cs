@@ -289,7 +289,7 @@ namespace System
 
         internal SR()
         {
-            this.resources = new ResourceManager("System.Core", this.GetType().Assembly);
+            this.resources = new ResourceManager("System.IO.Pipes.System.Core", this.GetType().Assembly);
         }
 
         private static SR GetLoader()
