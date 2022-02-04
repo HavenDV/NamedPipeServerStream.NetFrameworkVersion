@@ -9,7 +9,6 @@
   </PropertyGroup>
 
   <PropertyGroup Label="NuGet">
-    <Version>1.0.10</Version>
     <Description>This package adds original NamedPipeServerStream constructors from Net.Framework to NetStandard
 
 See System.IO.Pipes.NamedPipeServerStreamConstructors.New method
@@ -20,13 +19,7 @@ Features:
 - Official dependencies only
 - Tested
     </Description>
-    <PackageProjectUrl>https://github.com/HavenDV/NamedPipeServerStream.NetFrameworkVersion</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/HavenDV/NamedPipeServerStream.NetFrameworkVersion</RepositoryUrl>
-    <PackageReleaseNotes>Added Source Link.
-Added CLSCompliant=True.
-Added README to NuGet package.
-Added ContinuousIntegrationBuild=True.
-    </PackageReleaseNotes>
+    <PackageTags>NamedPipeServerStream, pipes, named pipes, async, async named pipes, namedpipes async, namedpipes, pipes async</PackageTags>
   </PropertyGroup>
 
   <ItemGroup Label="Resources">
