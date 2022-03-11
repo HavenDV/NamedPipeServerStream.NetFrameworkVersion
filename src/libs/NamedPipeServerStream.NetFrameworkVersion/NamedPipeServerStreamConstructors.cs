@@ -27,6 +27,12 @@ namespace System.IO.Pipes
         /// <param name="inheritability"></param>
         /// <param name="additionalAccessRights"></param>
         /// <returns></returns>
+#if NET5_0_OR_GREATER
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+#elif NETSTANDARD2_0_OR_GREATER || NET40_OR_GREATER
+#else
+#error Target Framework is not supported
+#endif
         [SecurityCritical]
         public static NamedPipeServerStream New(
             string pipeName,
@@ -98,7 +104,12 @@ namespace System.IO.Pipes
             int defaultTimeout,
             SECURITY_ATTRIBUTES securityAttributes);
 
-
+#if NET5_0_OR_GREATER
+        [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+#elif NETSTANDARD2_0_OR_GREATER || NET40_OR_GREATER
+#else
+#error Target Framework is not supported
+#endif
         [SecurityCritical]
         internal static unsafe SECURITY_ATTRIBUTES GetSecAttrs(
             HandleInheritability inheritability,
