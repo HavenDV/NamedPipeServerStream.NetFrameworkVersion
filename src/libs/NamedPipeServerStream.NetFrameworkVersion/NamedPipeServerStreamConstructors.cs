@@ -121,7 +121,11 @@ public static class NamedPipeServerStreamConstructors
         if ((inheritability & HandleInheritability.Inheritable) != HandleInheritability.None || pipeSecurity != null)
         {
             securityAttributes = new SECURITY_ATTRIBUTES();
+#if NET5_0_OR_GREATER
+            securityAttributes.nLength = Marshal.SizeOf<SECURITY_ATTRIBUTES>();
+#else
             securityAttributes.nLength = Marshal.SizeOf((object)securityAttributes);
+#endif
             if ((inheritability & HandleInheritability.Inheritable) != HandleInheritability.None)
                 securityAttributes.bInheritHandle = 1;
             if (pipeSecurity != null)
