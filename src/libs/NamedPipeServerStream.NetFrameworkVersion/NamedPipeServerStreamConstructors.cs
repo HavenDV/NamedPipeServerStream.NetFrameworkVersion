@@ -1,6 +1,9 @@
 ﻿using System.Globalization;
 using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
+#if NET5_0_OR_GREATER
+using System.Runtime.Versioning;
+#endif
 using System.Security;
 using System.Security.Permissions;
 using System.Text;
@@ -13,6 +16,11 @@ namespace System.IO.Pipes;
 [SecurityCritical]
 public static class NamedPipeServerStreamConstructors
 {
+#if NETFRAMEWORK
+    /// <inheritdoc cref="NamedPipeServerStream(string, PipeDirection, int, PipeTransmissionMode, PipeOptions, int, int, PipeSecurity, HandleInheritability, PipeAccessRights)"/>
+#elif NET6_0_OR_GREATER
+/// <inheritdoc cref="NamedPipeServerStreamAcl.Create"/>
+#else
     /// <summary>
     /// Create a new <see cref="NamedPipeServerStream"/>. All default parameters are copied from the original constructors.
     /// </summary>
@@ -27,11 +35,9 @@ public static class NamedPipeServerStreamConstructors
     /// <param name="inheritability"></param>
     /// <param name="additionalAccessRights"></param>
     /// <returns></returns>
+#endif
 #if NET5_0_OR_GREATER
-[System.Runtime.Versioning.SupportedOSPlatform("windows")]
-#elif NETSTANDARD2_0_OR_GREATER || NET40_OR_GREATER
-#else
-#error Target Framework is not supported
+    [SupportedOSPlatform("windows")]
 #endif
     [SecurityCritical]
     public static NamedPipeServerStream New(
@@ -46,6 +52,13 @@ public static class NamedPipeServerStreamConstructors
         HandleInheritability inheritability = HandleInheritability.None,
         PipeAccessRights additionalAccessRights = 0)
     {
+#if NETFRAMEWORK
+        return new NamedPipeServerStream(pipeName, direction, maxNumberOfServerInstances, transmissionMode,
+            options, inBufferSize, outBufferSize, pipeSecurity, inheritability, additionalAccessRights);
+#elif NET5_0_OR_GREATER
+        return NamedPipeServerStreamAcl.Create(pipeName, direction, maxNumberOfServerInstances, transmissionMode,
+            options, inBufferSize, outBufferSize, pipeSecurity, inheritability, additionalAccessRights);
+#else
         switch (pipeName)
         {
             case "":
@@ -90,8 +103,10 @@ public static class NamedPipeServerStreamConstructors
                         ((GCHandle)pinningHandle).Free();
                 }
         }
+#endif
     }
 
+#if NETSTANDARD2_0
     [SecurityCritical]
     [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true, BestFitMapping = false)]
     internal static extern SafePipeHandle CreateNamedPipe(
@@ -104,12 +119,6 @@ public static class NamedPipeServerStreamConstructors
         int defaultTimeout,
         SECURITY_ATTRIBUTES securityAttributes);
 
-#if NET5_0_OR_GREATER
-    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
-#elif NETSTANDARD2_0_OR_GREATER || NET40_OR_GREATER
-#else
-#error Target Framework is not supported
-#endif
     [SecurityCritical]
     internal static unsafe SECURITY_ATTRIBUTES GetSecAttrs(
         HandleInheritability inheritability,
@@ -121,11 +130,7 @@ public static class NamedPipeServerStreamConstructors
         if ((inheritability & HandleInheritability.Inheritable) != HandleInheritability.None || pipeSecurity != null)
         {
             securityAttributes = new SECURITY_ATTRIBUTES();
-#if NET5_0_OR_GREATER
             securityAttributes.nLength = Marshal.SizeOf<SECURITY_ATTRIBUTES>();
-#else
-            securityAttributes.nLength = Marshal.SizeOf((object)securityAttributes);
-#endif
             if ((inheritability & HandleInheritability.Inheritable) != HandleInheritability.None)
                 securityAttributes.bInheritHandle = 1;
             if (pipeSecurity != null)
@@ -261,4 +266,5 @@ public static class NamedPipeServerStreamConstructors
         StringBuilder lpBuffer = new StringBuilder(512);
         return FormatMessage(12800, NULL, errorCode, 0, lpBuffer, lpBuffer.Capacity, NULL) != 0 ? lpBuffer.ToString() : "UnknownError_Num " + (object)errorCode;
     }
+#endif
 }

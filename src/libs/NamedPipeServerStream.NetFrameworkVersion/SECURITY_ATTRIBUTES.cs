@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿#if NETSTANDARD2_0
+using System.Runtime.InteropServices;
 using System.Security;
 
 namespace System.IO.Pipes;
@@ -11,3 +12,4 @@ internal class SECURITY_ATTRIBUTES
     internal unsafe byte* pSecurityDescriptor;
     internal int bInheritHandle;
 }
+#endif
