@@ -1,12 +1,11 @@
-﻿using System.Globalization;
+﻿using System.Security;
+#if NETSTANDARD2_0
+using System.Globalization;
 using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
-#if NET5_0_OR_GREATER
-using System.Runtime.Versioning;
-#endif
-using System.Security;
 using System.Security.Permissions;
 using System.Text;
+#endif
 
 namespace System.IO.Pipes;
 
@@ -37,7 +36,7 @@ public static class NamedPipeServerStreamConstructors
     /// <returns></returns>
 #endif
 #if NET5_0_OR_GREATER
-    [SupportedOSPlatform("windows")]
+    [Runtime.Versioning.SupportedOSPlatform("windows")]
 #endif
     [SecurityCritical]
     public static NamedPipeServerStream New(
