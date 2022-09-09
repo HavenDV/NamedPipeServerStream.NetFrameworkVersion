@@ -5,7 +5,7 @@
     <Nullable>disable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>System.IO.Pipes</RootNamespace>
-    <NoWarn>$(NoWarn);CA1508;CA1838;CA2251;CA5392;CA1845;SYSLIB0003</NoWarn>
+    <NoWarn>$(NoWarn);CA1508;CA1838;CA2251;CA5392;CA1845;CA2101;SYSLIB0003</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Label="NuGet">
