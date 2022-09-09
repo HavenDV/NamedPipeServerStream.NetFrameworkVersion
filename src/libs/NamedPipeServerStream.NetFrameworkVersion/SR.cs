@@ -4,6 +4,7 @@
 // MVID: 95B4B630-A4AF-4E9A-8336-D9E36310DACA
 // Assembly location: C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Core.dll
 
+#if NETSTANDARD2_0
 using System.Globalization;
 using System.Resources;
 using System.Threading;
@@ -346,3 +347,4 @@ internal sealed class SR
         return SR.GetLoader()?.resources.GetObject(name, SR.Culture);
     }
 }
+#endif

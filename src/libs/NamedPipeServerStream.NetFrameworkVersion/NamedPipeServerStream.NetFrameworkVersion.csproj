@@ -5,7 +5,7 @@
     <Nullable>disable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>System.IO.Pipes</RootNamespace>
-    <NoWarn>$(NoWarn);CA1508;CA1838;CA2251;CA5392;CA1845;SYSLIB0003</NoWarn>
+    <NoWarn>$(NoWarn);CA1508;CA1838;CA2251;CA5392;CA1845;CA2101;SYSLIB0003</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Label="NuGet">
@@ -22,7 +22,7 @@ Features:
     <PackageTags>NamedPipeServerStream, pipes, named pipes, async, async named pipes, namedpipes async, namedpipes, pipes async</PackageTags>
   </PropertyGroup>
 
-  <ItemGroup Label="Resources">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'" Label="Resources">
     <None Remove="System.Core.resources" />
     <EmbeddedResource Include="System.Core.resources" />
   </ItemGroup>
@@ -34,12 +34,6 @@ Features:
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
     <PackageReference Include="System.IO.Pipes.AccessControl" Version="5.0.0" />
-    <PackageReference Include="System.Security.Permissions" Version="6.0.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <PackageReference Include="System.IO.Pipes.AccessControl" Version="5.0.0" />
-    <PackageReference Include="System.Security.Permissions" Version="6.0.0" />
   </ItemGroup>
 
 </Project>
