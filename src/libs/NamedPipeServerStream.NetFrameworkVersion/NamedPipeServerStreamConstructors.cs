@@ -18,7 +18,7 @@ public static class NamedPipeServerStreamConstructors
 {
 #if NETFRAMEWORK
     /// <inheritdoc cref="NamedPipeServerStream(string, PipeDirection, int, PipeTransmissionMode, PipeOptions, int, int, PipeSecurity, HandleInheritability, PipeAccessRights)"/>
-#elif NET6_0_OR_GREATER
+#elif NET5_0_OR_GREATER
 /// <inheritdoc cref="NamedPipeServerStreamAcl.Create"/>
 #else
     /// <summary>
