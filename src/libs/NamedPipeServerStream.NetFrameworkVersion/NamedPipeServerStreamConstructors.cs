@@ -246,24 +246,24 @@ public static class NamedPipeServerStreamConstructors
         return -2147024896 | errorCode;
     }
 
-    [SecurityCritical]
-    [DllImport("kernel32.dll", CharSet = CharSet.Auto, BestFitMapping = false)]
-    internal static extern int FormatMessage(
-        int dwFlags,
-        IntPtr lpSource,
-        int dwMessageId,
-        int dwLanguageId,
-        StringBuilder lpBuffer,
-        int nSize,
-        IntPtr va_list_arguments);
-
     internal static readonly IntPtr NULL = IntPtr.Zero;
 
     [SecurityCritical]
-    internal static string GetMessage(int errorCode)
+    internal static unsafe string GetMessage(int errorCode)
     {
-        StringBuilder lpBuffer = new StringBuilder(512);
-        return FormatMessage(12800, NULL, errorCode, 0, lpBuffer, lpBuffer.Capacity, NULL) != 0 ? lpBuffer.ToString() : "UnknownError_Num " + (object)errorCode;
+        var lpBuffer = stackalloc char[512];
+
+        return PInvoke.FormatMessage(
+            dwFlags:
+                FORMAT_MESSAGE_OPTIONS.FORMAT_MESSAGE_ARGUMENT_ARRAY |
+                FORMAT_MESSAGE_OPTIONS.FORMAT_MESSAGE_FROM_SYSTEM |
+                FORMAT_MESSAGE_OPTIONS.FORMAT_MESSAGE_IGNORE_INSERTS,
+            lpSource: null,
+            dwMessageId: (uint)errorCode,
+            dwLanguageId: 0,
+            lpBuffer: lpBuffer,
+            nSize: 512,
+            Arguments: null) != 0 ? new string(lpBuffer) : "UnknownError_Num " + (object)errorCode;
     }
 #endif
 }
