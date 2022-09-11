@@ -39,7 +39,7 @@ public static class NamedPipeServerStreamConstructors
     [Runtime.Versioning.SupportedOSPlatform("windows")]
 #endif
     [SecurityCritical]
-    public static NamedPipeServerStream New(
+    public unsafe static NamedPipeServerStream New(
         string pipeName,
         PipeDirection direction = PipeDirection.InOut,
         int maxNumberOfServerInstances = 1,
@@ -81,7 +81,7 @@ public static class NamedPipeServerStreamConstructors
                 if (string.Compare(fullPath, "\\\\.\\pipe\\anonymous", StringComparison.OrdinalIgnoreCase) == 0)
                     throw new ArgumentOutOfRangeException(nameof(pipeName), SR.GetString("ArgumentOutOfRange_AnonymousReserved"));
                 object pinningHandle = (object)null;
-                SECURITY_ATTRIBUTES secAttrs = GetSecAttrs(inheritability, pipeSecurity, out pinningHandle);
+                SECURITY_ATTRIBUTES? secAttrs = GetSecAttrs(inheritability, pipeSecurity, out pinningHandle);
                 try
                 {
                     int openMode = (int)((PipeOptions)(direction | (maxNumberOfServerInstances == 1 ? (PipeDirection)524288 : (PipeDirection)0)) | options | (PipeOptions)additionalAccessRights);
@@ -89,7 +89,24 @@ public static class NamedPipeServerStreamConstructors
                     if (maxNumberOfServerInstances == -1)
                         maxNumberOfServerInstances = (int)byte.MaxValue;
 #pragma warning disable CA2000 // Dispose objects before losing scope
-                    SafePipeHandle namedPipe = CreateNamedPipe(fullPath, openMode, pipeMode, maxNumberOfServerInstances, outBufferSize, inBufferSize, 0, secAttrs);
+
+                    SafePipeHandle namedPipe;
+                    var secAttrsLocal = secAttrs.HasValue ? secAttrs.Value : default;
+                    fixed (char* lpNameLocal = fullPath)
+                    {
+                        var handle = PInvoke.CreateNamedPipe(
+                            lpName: lpNameLocal,
+                            dwOpenMode: (FILE_FLAGS_AND_ATTRIBUTES)openMode,
+                            dwPipeMode: (NAMED_PIPE_MODE)pipeMode,
+                            nMaxInstances: (uint)maxNumberOfServerInstances,
+                            nOutBufferSize: (uint)outBufferSize,
+                            nInBufferSize: (uint)inBufferSize,
+                            nDefaultTimeOut: 0,
+                            lpSecurityAttributes: secAttrs.HasValue ? &secAttrsLocal : null);
+
+                        namedPipe = new SafePipeHandle(handle, ownsHandle: true);
+                    }
+
 #pragma warning restore CA2000 // Dispose objects before losing scope
                     if (namedPipe.IsInvalid)
                         WinIOError(Marshal.GetLastWin32Error(), string.Empty);
@@ -107,40 +124,30 @@ public static class NamedPipeServerStreamConstructors
 
 #if NETSTANDARD2_0
     [SecurityCritical]
-    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true, BestFitMapping = false)]
-    internal static extern SafePipeHandle CreateNamedPipe(
-        string pipeName,
-        int openMode,
-        int pipeMode,
-        int maxInstances,
-        int outBufferSize,
-        int inBufferSize,
-        int defaultTimeout,
-        SECURITY_ATTRIBUTES securityAttributes);
-
-    [SecurityCritical]
-    internal static unsafe SECURITY_ATTRIBUTES GetSecAttrs(
+    internal static unsafe SECURITY_ATTRIBUTES? GetSecAttrs(
         HandleInheritability inheritability,
         PipeSecurity pipeSecurity,
         out object pinningHandle)
     {
         pinningHandle = (object)null;
-        SECURITY_ATTRIBUTES securityAttributes = (SECURITY_ATTRIBUTES)null;
         if ((inheritability & HandleInheritability.Inheritable) != HandleInheritability.None || pipeSecurity != null)
         {
-            securityAttributes = new SECURITY_ATTRIBUTES();
-            securityAttributes.nLength = Marshal.SizeOf<SECURITY_ATTRIBUTES>();
+            var securityAttributes = new SECURITY_ATTRIBUTES();
+            securityAttributes.nLength = (uint)Marshal.SizeOf<SECURITY_ATTRIBUTES>();
             if ((inheritability & HandleInheritability.Inheritable) != HandleInheritability.None)
-                securityAttributes.bInheritHandle = 1;
+                securityAttributes.bInheritHandle = true;
             if (pipeSecurity != null)
             {
                 byte[] descriptorBinaryForm = pipeSecurity.GetSecurityDescriptorBinaryForm();
                 pinningHandle = (object)GCHandle.Alloc((object)descriptorBinaryForm, GCHandleType.Pinned);
                 fixed (byte* numPtr = descriptorBinaryForm)
-                    securityAttributes.pSecurityDescriptor = numPtr;
+                    securityAttributes.lpSecurityDescriptor = numPtr;
             }
+
+            return securityAttributes;
         }
-        return securityAttributes;
+
+        return null;
     }
 
     [SecurityCritical]
