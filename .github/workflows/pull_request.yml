@@ -1,0 +1,12 @@
+name: Build and test
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build-test-publish:
+    name: Build, test and publish
+    uses: HavenDV/workflows/.github/workflows/dotnet_build-test-publish.yml@main
+    with:
+      os: windows-latest
